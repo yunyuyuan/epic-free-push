@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      html, body {
+        width: 100%
+      }
+      table {
+        width: 80%;
+        margin: auto;
+        text-align: center;
+      }
+      thead {
+        background: #000;
+        color: white;
+      }
+      thead th {
+        padding: 12px 0;
+      }
+      .title img {
+        object-fit: contain;
+        width: 10rem;
+      }
+      .title a{
+        font-size: 1.2rem;
+      }
+      tbody td {
+        border-bottom: 1px solid gray;
+      }
+      tbody td:not(:last-of-type) {
+        border-right: 1px solid gray;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>游戏</th>
+          <th>起止时间</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for game in games %}
+        <tr>
+          <td class="title">
+            <img src="{{ game.cover }}" /><br/>
+            <a href="{{ game.link }}">{{ game.title }}</a>
+          </td>
+          <td><b>{{ game.discount_time.start }}</b> ~ <b>{{ game.discount_time.end }}</b></td>
+          <td>
+            {% if game.upcoming %}
+              <span style="color: #e78400;">未开始</span>
+            {% else %}
+              <span style="color: #00b23d;">进行中</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
