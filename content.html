@@ -48,7 +48,7 @@
             <img src="{{ game.cover }}" /><br/>
             <a href="{{ game.link }}">{{ game.title }}</a>
           </td>
-          <td><b>{{ game.discount_time.start }}</b> ~ <b>{{ game.discount_time.end }}</b></td>
+          <td><b>{{ game.start }}</b> ~ <b>{{ game.end }}</b></td>
           <td>
             {% if game.upcoming %}
               <span style="color: #e78400;">未开始</span>
