@@ -35,13 +35,13 @@ def get_games():
     result = get('https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale=zh-CN&country=CN&allowCountries=CN', headers={
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62'
     }).json()
-    origin_games = [x for x in result['data']['Catalog']['searchStore']['elements'] if x['offerType'] == 'BASE_GAME']
+    origin_games = [x for x in result['data']['Catalog']['searchStore']['elements'] if x['offerType'] == 'BASE_GAME' or x['offerType'] == 'OTHERS']
     # remove item not in origin_games
     passed =  [x for x in passed if [y for y in origin_games if x['id']==y['id'] and x['upcoming']!=bool(y['promotions']['promotionalOffers'])]]
     games = []
     for game in origin_games:
         title = game['title']
-        cover = [x for x in game['keyImages'] if x['type']=='Thumbnail'][0]['url'] + '?h=480&quality=medium&resize=1&w=360'
+        cover = game['keyImages'][0]['url']
         upcoming = False
         promotions = game['promotions']
         if not promotions['promotionalOffers']:
@@ -58,7 +58,7 @@ def get_games():
                 'title': title, 
                 'cover': cover,
                 'upcoming': upcoming,
-                'link': f"https://store.epicgames.com/zh-CN/p/{game['catalogNs']['mappings'][0]['pageSlug']}",
+                'link': f"https://store.epicgames.com/zh-CN/p/{game['catalogNs']['mappings'][0]['pageSlug'] if game['catalogNs']['mappings'] else game['productSlug']}",
                 'start': start_time.strftime(target_format),
                 'end': end_time.strftime(target_format),
             }
