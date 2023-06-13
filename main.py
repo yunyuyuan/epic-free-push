@@ -1,37 +1,40 @@
-from requests import get
+import traceback
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from jinja2 import Environment, FileSystemLoader
 from datetime import datetime, timedelta
 import json
 import os.path as path
 
-passed_file = path.join(path.dirname(__file__), 'passed.json')
+subject = 'Epic Free Games'
+mail_content = None
 
-def read_passed_file():
-    with open(passed_file, 'r') as fp:
-        return json.load(fp)
+try:
+    from requests import get
+    from jinja2 import Environment, FileSystemLoader
 
-def write_passed_file(data):
-    with open(passed_file, 'w') as fp:
-        json.dump(data, fp)
+    passed_file = path.join(path.dirname(__file__), 'passed.json')
 
-passed = []
-if not path.exists(passed_file):
-    write_passed_file(passed)
-else:
-    passed = read_passed_file()
+    def read_passed_file():
+        with open(passed_file, 'r') as fp:
+            return json.load(fp)
 
-env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
-template = env.get_template('content.html')
+    def write_passed_file(data):
+        with open(passed_file, 'w') as fp:
+            json.dump(data, fp)
 
-origin_format = '%Y-%m-%dT%H:%M:%S.%fZ'
-target_format = '%Y-%m-%d'
+    passed = []
+    if not path.exists(passed_file):
+        write_passed_file(passed)
+    else:
+        passed = read_passed_file()
 
+    env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
+    template = env.get_template('content.html')
 
-def get_games():
-    global passed
+    origin_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+    target_format = '%Y-%m-%d'
+
     result = get('https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale=zh-CN&country=CN&allowCountries=CN', headers={
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62'
     }).json()
@@ -68,9 +71,17 @@ def get_games():
     if not games:
         print('no new games')
         exit()
-    return template.render(games=sorted(games, key=lambda game: game['upcoming']))
-
-html = get_games()
+    mail_content = MIMEText(template.render(games=sorted(games, key=lambda game: game['upcoming'])), 'html')
+except Exception as e:
+    subject = '出错了 - Epic Free Games'
+    mail_content = MIMEText('''
+    <html>
+        <body>
+            <h2>An error has occurred. Here is the traceback:</h2>
+            <pre style="overflow: auto;">{}</pre>
+        </body>
+    </html>
+'''.format(traceback.format_exc()), 'html')
 
 config = {}
 
@@ -86,8 +97,8 @@ smtp_port = 587
 msg = MIMEMultipart()
 msg['From'] = config['ADDRESS']
 msg['To'] = config['ADDRESS']
-msg['Subject'] = 'Epic Free Games'
-msg.attach(MIMEText(html, 'html'))
+msg['Subject'] = subject
+msg.attach(mail_content)
 
 # Connect to SMTP server
 server = smtplib.SMTP(smtp_server, smtp_port)
