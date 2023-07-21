@@ -47,9 +47,17 @@ try:
         cover = game['keyImages'][0]['url']
         upcoming = False
         promotions = game['promotions']
+        if not promotions:
+            continue
+        for k in ['promotionalOffers', 'upcomingPromotionalOffers']:
+            if promotions[k]:
+                promotions[k] = [x for x in promotions[k][0]['promotionalOffers'] if x['discountSetting']['discountPercentage']==0]
         if not promotions['promotionalOffers']:
             upcoming = True
-        discount_time = [x for x in promotions['upcomingPromotionalOffers' if upcoming else 'promotionalOffers'][0]['promotionalOffers'] if x['discountSetting']['discountPercentage']==0][0]
+        valid_promotion = promotions['upcomingPromotionalOffers' if upcoming else 'promotionalOffers']
+        if not valid_promotion:
+            continue
+        discount_time = valid_promotion[0]
         start_time = datetime.strptime(discount_time['startDate'], origin_format) + timedelta(hours=8)
         end_time = datetime.strptime(discount_time['endDate'], origin_format) + timedelta(hours=8)
         if [x for x in passed if x['id']==game['id'] and x['upcoming']==upcoming]:
