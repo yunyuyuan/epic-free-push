@@ -40,7 +40,7 @@ try:
     }).json()
     origin_games = [x for x in result['data']['Catalog']['searchStore']['elements'] if (x['offerType'] == 'BASE_GAME' or x['offerType'] == 'OTHERS') and x['promotions']]
     # remove item not in origin_games
-    passed =  [x for x in passed if [y for y in origin_games if x['id']==y['id'] and x['upcoming']!=bool(y['promotions']['promotionalOffers'])]]
+    passed =  [x for x in passed if [y for y in origin_games if x['id']==y['id']]]
     games = []
     for game in origin_games:
         title = game['title']
