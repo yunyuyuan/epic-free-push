@@ -16,11 +16,11 @@ try:
     passed_file = path.join(path.dirname(__file__), 'passed.json')
 
     def read_passed_file():
-        with open(passed_file, 'r') as fp:
+        with open(passed_file, 'r', encoding='utf-8') as fp:
             return json.load(fp)
 
     def write_passed_file(data):
-        with open(passed_file, 'w') as fp:
+        with open(passed_file, 'w', encoding='utf-8') as fp:
             json.dump(data, fp)
 
     passed = []
@@ -60,10 +60,15 @@ try:
         discount_time = valid_promotion[0]
         start_time = datetime.strptime(discount_time['startDate'], origin_format) + timedelta(hours=8)
         end_time = datetime.strptime(discount_time['endDate'], origin_format) + timedelta(hours=8)
-        if [x for x in passed if x['id']==game['id'] and x['upcoming']==upcoming]:
+        old_game = [x for x in passed if x['id']==game['id']]
+        if old_game and old_game[0]['upcoming'] == upcoming:
             # already exist
             continue
         else:
+            if old_game and old_game[0]['upcoming'] != upcoming:
+                # upcoming change
+                passed.remove(old_game[0])
+
             item = {
                 'id': game['id'],
                 'title': title, 
