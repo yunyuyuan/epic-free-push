@@ -29,6 +29,7 @@ try:
     else:
         passed = read_passed_file()
 
+    print('passed: ', passed)
     env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
     template = env.get_template('content.html')
 
@@ -39,6 +40,7 @@ try:
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62'
     }).json()
     origin_games = [x for x in result['data']['Catalog']['searchStore']['elements'] if (x['offerType'] == 'BASE_GAME' or x['offerType'] == 'OTHERS') and x['promotions']]
+    print('origin_games', origin_games)
     # remove item not in origin_games
     passed =  [x for x in passed if [y for y in origin_games if x['id']==y['id']]]
     games = []
