@@ -33,7 +33,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: passed.json
-          key: ${{ runner.os }}-cache-passed-json
+          key: passed-json-cache-${{ hashFiles('passed.json') }}
+          restore-keys: |
+            passed-json-cache-
 
       - name: Run main.py
         run: |
@@ -43,7 +45,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: passed.json
-          key: ${{ runner.os }}-cache-passed-json
+          key: passed-json-cache-${{ hashFiles('passed.json') }}
 
 
 
