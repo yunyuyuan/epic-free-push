@@ -35,6 +35,7 @@ jobs:
           path: passed.json
           key: passed-json-cache-${{ hashFiles('passed.json') }}
           restore-keys: |
+            passed-json-cache-${{ hashFiles('passed.json') }}
             passed-json-cache-
 
       - name: Run main.py
