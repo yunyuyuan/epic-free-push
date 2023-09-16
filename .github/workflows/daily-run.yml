@@ -33,21 +33,16 @@ jobs:
         uses: actions/cache@v3
         with:
           path: passed.json
-          key: passed-json-cache-${{ hashFiles('passed.json') }}
-          restore-keys: |
-            passed-json-cache-${{ hashFiles('passed.json') }}
-            passed-json-cache-
+          key: ${{ runner.os }}-passed-json-cache-${{ github.head_ref }}-${{ hashFiles('passed.json') }}
 
       - name: Run main.py
         run: |
           python main.py
 
-      - name: Save cache
-        uses: actions/cache@v3
-        with:
-          path: passed.json
-          key: passed-json-cache-${{ hashFiles('passed.json') }}
-
+      - name: Enforce cache update for a local NX cache
+        run: |
+          STATE_CACHE_KEY="${{ runner.os }}-passed-json-cache-${{ github.head_ref }}-${{ hashFiles('passed.json') }}"
+          echo "STATE_CACHE_KEY=${STATE_CACHE_KEY}" >> $GITHUB_ENV
 
 
 
