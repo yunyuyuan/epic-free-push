@@ -1,6 +1,7 @@
 import requests
 import argparse
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='restore or save gist')
     parser.add_argument('--restore', default=False, action="store_true", help='is restore?')
@@ -13,6 +14,10 @@ if __name__ == '__main__':
     if args.save:
         with open("passed.json", "r", encoding="utf-8") as fp:
             passed = fp.read()
+            resp = requests.get(f'https://gist.githubusercontent.com/{args.owner}/{args.id}/raw/passed.json')
+            if passed == resp.text:
+                print("no need to update")
+                exit()
             resp = requests.patch(f'https://api.github.com/gists/{args.id}', json={
                 "files": {
                     "passed.json": { "content": passed }

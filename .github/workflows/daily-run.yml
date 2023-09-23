@@ -32,7 +32,7 @@ jobs:
       - name: Restore passed.json from gist
         run: |
           python gist.py --restore --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
-  
+
       - name: Run main.py
         run: |
           python main.py
@@ -40,4 +40,3 @@ jobs:
       - name: Save passed.json to gist
         run: |
           python gist.py --save --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
-      
