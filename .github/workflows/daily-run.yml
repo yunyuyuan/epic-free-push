@@ -28,27 +28,16 @@ jobs:
       - name: Set up environment variables
         run: |
           echo "${{ secrets.ENV_VARS }}" > .env
-          
-      - uses: sergeysova/gist-read-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          gist_id: ${{ secrets.GIST_ID }}
-          file_name: passed.json
 
+      - name: Restore passed.json from gist
+        run: |
+          python gist.py --restore --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
+  
       - name: Run main.py
         run: |
           python main.py
-          echo "PASSED=$(cat passed.json)" >> $GITHUB_OUTPUT
 
-      - uses: sergeysova/gist-write-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          gist_id: ${{ secrets.GIST_ID }}
-          file_name: passed.json
-          content: ${{ steps.increment.outputs.PASSED }}
-
-
-
-
+      - name: Save passed.json to gist
+        run: |
+          python gist.py --save --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
+      
