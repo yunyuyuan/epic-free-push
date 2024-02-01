@@ -8,4 +8,7 @@ jobs:
     name: Cronjob based github action
     runs-on: ubuntu-latest
     steps:
-      - uses: gautamkrishnar/keepalive-workflow@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: commit
+        uses: gautamkrishnar/keepalive-workflow@v1
