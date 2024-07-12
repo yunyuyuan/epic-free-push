@@ -40,3 +40,4 @@ jobs:
       - name: Save passed.json to gist
         run: |
           python gist.py --save --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
+      - uses: gautamkrishnar/keepalive-workflow@master
