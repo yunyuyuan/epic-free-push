@@ -1,13 +1,21 @@
 import traceback
-import smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 import json
 import os.path as path
 
-subject = 'Epic Free Games'
+from notify import send_mail, gotify
+
+notify_title = 'Epic Free Games'
 mail_content = None
+markdown_content = None
+
+config = {}
+
+with open(path.join(path.dirname(__file__), '.env'), 'r') as file:
+    for line in file.readlines():
+        key, value = line.strip().split('=')
+        config[key] = value
 
 try:
     from requests import get
@@ -30,8 +38,6 @@ try:
         passed = read_passed_file()
 
     print('passed: ', passed)
-    env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
-    template = env.get_template('content.html')
 
     origin_format = '%Y-%m-%dT%H:%M:%S.%fZ'
     target_format = '%Y-%m-%d'
@@ -86,9 +92,14 @@ try:
     if not games:
         print('no new games')
         exit()
-    mail_content = MIMEText(template.render(games=sorted(games, key=lambda game: game['upcoming'])), 'html')
+    games = sorted(games, key=lambda game: game['upcoming'])
+
+    env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
+    mail_content = MIMEText(env.get_template('mail.html').render(games=games), 'html')
+    markdown_content = env.get_template('markdown.html').render(games=games)
 except Exception as e:
-    subject = '出错了 - Epic Free Games'
+    notify_title = '出错了 - Epic Free Games'
+    error = traceback.format_exc()
     mail_content = MIMEText('''
     <html>
         <body>
@@ -96,34 +107,15 @@ except Exception as e:
             <pre style="overflow: auto;">{}</pre>
         </body>
     </html>
-'''.format(traceback.format_exc()), 'html')
+    '''.format(error), 'html')
+    markdown_content = '''
+An error has occurred. Here is the traceback:
+```python
+{}
+```
+'''.format(error)
 
-config = {}
-
-with open(path.join(path.dirname(__file__), '.env'), 'r') as file:
-    for line in file.readlines():
-        key, value = line.strip().split('=')
-        config[key] = value
-
-smtp_server = 'smtp.qq.com'
-smtp_port = 587
-
-# Create a message
-msg = MIMEMultipart()
-msg['From'] = config['ADDRESS']
-msg['To'] = config['ADDRESS']
-msg['Subject'] = subject
-msg.attach(mail_content)
-
-# Connect to SMTP server
-server = smtplib.SMTP(smtp_server, smtp_port)
-server.starttls()
-server.login(config['ADDRESS'], config['CODE'])
-
-# Send the email
-server.sendmail(config['ADDRESS'], config['ADDRESS'], msg.as_string())
-
-# Close the SMTP connection
-server.quit()
-
-print('Email sent successfully!')
+if config['ADDRESS'] and config['CODE']:
+    send_mail(config['ADDRESS'], config['CODE'], notify_title, mail_content)
+if config['GOTIFY_URL'] and config['GOTIFY_TOKEN']:
+    gotify(config['GOTIFY_URL'], config['GOTIFY_TOKEN'], notify_title, markdown_content)
