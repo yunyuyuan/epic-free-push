@@ -41,11 +41,7 @@ jobs:
         run: |
           python gist.py --save --token ${{ secrets.GH_TOKEN }} --id ${{ secrets.GIST_ID }} --owner ${{ github.repository_owner }}
 
-  keepalive-job:
-    name: Keepalive Workflow
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Update CHANGELOG.md
+        run: |
+          python commit.py --token ${{ secrets.GH_TOKEN }} --repo ${{ github.repository }} --branch ${{ github.ref_name }}
+  
