@@ -43,9 +43,7 @@ if __name__ == '__main__':
     sha = data['oid']
     lastCommitTime = dateutil.parser.parse(data['committedDate'])
     nowTimestamp = datetime.datetime.now().timestamp()
-    # TODO 解除注释
-    # if (nowTimestamp - lastCommitTime.timestamp())/(3600*24) > 50:
-    if True:
+    if (nowTimestamp - lastCommitTime.timestamp())/(3600*24) > 50:
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         resp = requests.post(f'https://api.github.com/graphql', json={
