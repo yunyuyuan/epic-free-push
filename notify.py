@@ -17,7 +17,8 @@ def tgbot(token, chat_id, title, message):
     payload = {
         "chat_id": chat_id,
         "text": f"{title} \n {message}",
-        "parse_mode": "Markdown"
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": "true"
     }
 
     response = requests.post(url, data=payload)
