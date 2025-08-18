@@ -4,9 +4,8 @@ from datetime import datetime, timedelta
 import json
 import os.path as path
 
-from notify import send_mail, gotify
+from notify import send_mail, gotify, tgbot
 
-notify_title = 'Epic Free Games'
 mail_content = None
 markdown_content = None
 
@@ -15,8 +14,14 @@ config = {}
 with open(path.join(path.dirname(__file__), '.env'), 'r') as file:
     for line in file.readlines():
         key, value = line.strip().split('=')
+        # 去掉包裹的引号
+        if (value.startswith('"') and value.endswith('"')) or \
+            (value.startswith("'") and value.endswith("'")):
+            value = value[1:-1]
         config[key] = value
-
+        
+    if not config.get('NOTIFY_TITLE'):
+        config['NOTIFY_TITLE'] = 'Epic Free Games'
 try:
     from requests import get
     from jinja2 import Environment, FileSystemLoader
@@ -53,6 +58,7 @@ try:
     for game in origin_games:
         title = game['title']
         cover = game['keyImages'][0]['url']
+        description = game['description']
         upcoming = False
         promotions = game['promotions']
         if not promotions:
@@ -81,6 +87,7 @@ try:
                 'id': game['id'],
                 'title': title, 
                 'cover': cover,
+                'description': description,
                 'upcoming': upcoming,
                 'link': f"https://store.epicgames.com/zh-CN/p/{game['catalogNs']['mappings'][0]['pageSlug'] if game['catalogNs']['mappings'] else game['productSlug']}",
                 'start': start_time.strftime(target_format),
@@ -95,10 +102,11 @@ try:
     games = sorted(games, key=lambda game: game['upcoming'])
 
     env = Environment(loader=FileSystemLoader(path.dirname(__file__)))
-    mail_content = MIMEText(env.get_template('mail.html').render(games=games), 'html')
-    markdown_content = env.get_template('markdown.html').render(games=games)
+    mail_content = MIMEText(env.get_template('templates/mail.html').render(games=games), 'html')
+    markdown_content = env.get_template('templates/markdown.md').render(games=games)
+    tg_bot_content = env.get_template('templates/tgbot.md').render(games=games)
 except Exception as e:
-    notify_title = '出错了 - Epic Free Games'
+    config['NOTIFY_TITLE'] = '出错了 - Epic Free Games'
     error = traceback.format_exc()
     mail_content = MIMEText('''
     <html>
@@ -116,6 +124,8 @@ An error has occurred. Here is the traceback:
 '''.format(error)
 
 if config.get('ADDRESS') and config.get('CODE'):
-    send_mail(config['ADDRESS'], config['CODE'], notify_title, mail_content)
+    send_mail(config['ADDRESS'], config['CODE'], config['NOTIFY_TITLE'], mail_content)
 if config.get('GOTIFY_URL') and config.get('GOTIFY_TOKEN'):
-    gotify(config['GOTIFY_URL'], config['GOTIFY_TOKEN'], notify_title, markdown_content)
+    gotify(config['GOTIFY_URL'], config['GOTIFY_TOKEN'], config['NOTIFY_TITLE'], markdown_content)
+if config.get('TGBOT_TOKEN') and config.get('TGBOT_CHAT_ID'):
+    tgbot(config['TGBOT_TOKEN'], config['TGBOT_CHAT_ID'], config['NOTIFY_TITLE'], tg_bot_content)

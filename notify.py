@@ -2,7 +2,6 @@ from email.mime.multipart import MIMEMultipart
 import smtplib
 import requests
 
-
 def gotify(url, token, title, message):
     url = f'{url}/message?token={token}'
     data = {
@@ -12,6 +11,18 @@ def gotify(url, token, title, message):
         "priority": 1,
     }
     requests.post(url, json=data).json()
+
+def tgbot(token, chat_id, title, message):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": f"{title} \n {message}",
+        "parse_mode": "Markdown"
+    }
+
+    response = requests.post(url, data=payload)
+    print(response.json())
+
 
 def send_mail(address, code, subject, content):
     smtp_server = 'smtp.qq.com'
